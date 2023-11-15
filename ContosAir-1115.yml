@@ -12,8 +12,8 @@ resources:
       source: Student1-35489115.ContosoAir # name of the pipeline that produces the artifactresources:
       trigger:
         branches:
-        include:
-          - master
+          include:
+            - master
 pool:
   vmImage: ubuntu-latest
 
