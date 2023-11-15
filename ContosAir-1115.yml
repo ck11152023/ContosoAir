@@ -18,4 +18,33 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+ - task: DownloadPipelineArtifact@2
+   inputs:
+     buildType: 'specific'
+     project: '6127ee55-37d4-428f-aa0b-1c848a9c8701'
+     definition: '4'
+     buildVersionToDownload: 'latest'
+     targetPath: '$(Pipeline.Workspace)'
 
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: 'svcconnection1115'
+    subscriptionId: '176267e8-7e9e-456c-a08c-c781fc97b6cb'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: '$(resourcegroup)'
+    location: 'West US 2'
+    templateLocation: 'Linked artifact'
+    csmFile: '$(Pipeline.Workspace)/drop/Templates/azuredeploy.json'
+    csmParametersFile: '$(Pipeline.Workspace)/drop/Templates/azuredeploy.parameters.json'
+    deploymentMode: 'Incremental'
+    downloadPath: '$(System.ArtifactsDirectory)'
+    Override template parameters: '-p_environment $(web_environment) -p_site_prefix $(web_prefix) -p_site_web_name $(web_site)'
+
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'MIPDG--lod48422187(176267e8-7e9e-456c-a08c-c781fc97b6cb)'
+    appType: 'webApp'
+    WebAppName: '$(web_prefix)-$(web_site)-$(web_environment)'
+    packageForLinux: '$(Pipeline.Workspace)/**/*.zip'
